@@ -18,7 +18,7 @@ llm install llm-requesty
 
 ## Configuration
 
-You will need an API key from Requesty. You can [obtain one here](https://requesty.ai/keys).
+You will need an API key from Requesty. You can [obtain one here](https://app.requesty.ai/analytics).
 
 You can set that as an environment variable called `requesty_KEY`, or add it to the `llm` set of saved keys using:
 
