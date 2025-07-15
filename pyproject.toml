@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-requesty"
-version = "0.0.1"
+version = "0.1.0"
 description = "LLM plugin for models hosted by requesty"
 readme = "README.md"
 authors = [{name = "Rajashekar Chintalapati"}]

@@ -149,11 +149,62 @@ def get_supports_images(model_definition):
         return False
 
 
+def refresh_models():
+    """Refresh the cached models from the Requesty API"""
+    key = llm.get_key("", "requesty", "requesty_KEY")
+    if not key:
+        raise click.ClickException("No key found for Requesty")
+    
+    headers = {"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"}
+    
+    # Refresh main models cache
+    try:
+        response = httpx.get("https://router.requesty.ai/v1/models", headers=headers, follow_redirects=True)
+        response.raise_for_status()
+        models_data = response.json()
+        
+        models_path = llm.user_dir() / "requesty_models.json"
+        models_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(models_path, "w") as file:
+            json.dump(models_data, file, indent=2)
+        
+        models_count = len(models_data.get("data", []))
+        click.echo(f"Refreshed {models_count} models cache at {models_path}", err=True)
+        
+    except httpx.HTTPError as e:
+        raise click.ClickException(f"Failed to refresh models cache: {e}")
+    
+    # Refresh structured outputs models cache
+    try:
+        response = httpx.get(
+            "https://router.requesty.ai/v1/models?supported_parameters=structured_outputs",
+            headers=headers,
+            follow_redirects=True
+        )
+        response.raise_for_status()
+        structured_data = response.json()
+        
+        structured_path = llm.user_dir() / "requesty_models_structured_outputs.json"
+        with open(structured_path, "w") as file:
+            json.dump(structured_data, file, indent=2)
+        
+        structured_count = len(structured_data.get("data", []))
+        click.echo(f"Refreshed {structured_count} structured outputs models cache at {structured_path}", err=True)
+        
+    except httpx.HTTPError as e:
+        raise click.ClickException(f"Failed to refresh structured outputs cache: {e}")
+
+
 @llm.hookimpl
 def register_commands(cli):
     @cli.group()
     def requesty():
         "Commands relating to the llm-requesty plugin"
+
+    @requesty.command()
+    def refresh():
+        "Refresh the cached models from the Requesty API"
+        refresh_models()
 
     @requesty.command()
     @click.option("json_", "--json", is_flag=True, help="Output as JSON")
